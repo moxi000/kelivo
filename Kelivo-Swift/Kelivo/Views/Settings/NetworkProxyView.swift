@@ -122,9 +122,8 @@ struct NetworkProxyView: View {
         settings.load()
         proxyEnabled = settings.proxyEnabled
         proxyType = settings.proxyType
-        proxyHost = settings.proxyHost
-        port = settings.proxyPort > 0 ? "\(settings.proxyPort)" : ""
         host = settings.proxyHost
+        port = settings.proxyPort > 0 ? "\(settings.proxyPort)" : ""
     }
 
     private func saveProxy() {
@@ -136,9 +135,6 @@ struct NetworkProxyView: View {
         settings.proxyPort = Int(port) ?? 0
         settings.save()
     }
-
-    // Work around: store host separately from settings loading
-    @State private var proxyHost = ""
 }
 
 #Preview {
