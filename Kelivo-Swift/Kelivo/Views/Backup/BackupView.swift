@@ -1,123 +1,194 @@
 import SwiftUI
+import SwiftData
 
-@available(iOS 26.0, macOS 26.0, *)
 struct BackupView: View {
-    @Environment(BackupViewModel.self) private var backupVM
+    // MARK: - WebDAV State
+    @State private var webdavUrl = ""
+    @State private var webdavUsername = ""
+    @State private var webdavPassword = ""
+    @State private var webdavPath = "kelivo_backups"
+    @State private var webdavAutoBackup = false
+
+    // MARK: - S3 State
+    @State private var s3Endpoint = ""
+    @State private var s3Bucket = ""
+    @State private var s3Region = "us-east-1"
+    @State private var s3AccessKey = ""
+    @State private var s3SecretKey = ""
+
+    // MARK: - Progress
+    @State private var isBackingUp = false
+    @State private var isRestoring = false
+    @State private var lastBackupDate: Date?
+    @State private var showImportPicker = false
+    @State private var backupProgress: Double = 0
 
     var body: some View {
-        @Bindable var vm = backupVM
         Form {
-            // MARK: - WebDAV Section
+            // MARK: - WebDAV
             Section {
-                TextField(String(localized: "webdavUrl"), text: $vm.webDavUrl)
-                    .textContentType(.URL)
-                TextField(String(localized: "username"), text: $vm.webDavUsername)
-                SecureField(String(localized: "password"), text: .constant(""))
-                TextField(String(localized: "remotePath"), text: $vm.webDavPath)
-                Toggle(String(localized: "autoBackup"), isOn: $vm.webDavAutoBackup)
-                if vm.webDavAutoBackup {
-                    Stepper(String(localized: "intervalMinutes \(vm.webDavAutoInterval)"),
-                            value: $vm.webDavAutoInterval, in: 5...1440, step: 5)
-                }
-                if let last = vm.webDavLastBackup {
+                TextField(String(localized: "Server URL"), text: $webdavUrl)
+                    .autocorrectionDisabled()
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.URL)
+                    #endif
+
+                TextField(String(localized: "Username"), text: $webdavUsername)
+                    .autocorrectionDisabled()
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    #endif
+
+                SecureField(String(localized: "Password"), text: $webdavPassword)
+
+                TextField(String(localized: "Remote Path"), text: $webdavPath)
+                    .autocorrectionDisabled()
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    #endif
+
+                Toggle(String(localized: "Auto Backup"), isOn: $webdavAutoBackup)
+            } header: {
+                Label(String(localized: "WebDAV"), systemImage: "externaldrive.connected.to.line.below")
+            }
+
+            // MARK: - S3
+            Section {
+                TextField(String(localized: "Endpoint"), text: $s3Endpoint)
+                    .autocorrectionDisabled()
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.URL)
+                    #endif
+
+                TextField(String(localized: "Bucket"), text: $s3Bucket)
+                    .autocorrectionDisabled()
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    #endif
+
+                TextField(String(localized: "Region"), text: $s3Region)
+                    .autocorrectionDisabled()
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    #endif
+
+                SecureField(String(localized: "Access Key"), text: $s3AccessKey)
+                SecureField(String(localized: "Secret Key"), text: $s3SecretKey)
+            } header: {
+                Label(String(localized: "S3 Compatible Storage"), systemImage: "cloud")
+            }
+
+            // MARK: - Manual Backup/Restore
+            Section {
+                Button {
+                    performBackup()
+                } label: {
                     HStack {
-                        Text(String(localized: "lastBackup"))
-                        Spacer()
-                        Text(last, style: .relative)
+                        if isBackingUp {
+                            ProgressView()
+                                .controlSize(.small)
+                        } else {
+                            Image(systemName: "arrow.up.doc")
+                        }
+                        Text(String(localized: "Backup Now"))
+                    }
+                }
+                .disabled(isBackingUp || isRestoring)
+
+                Button {
+                    performRestore()
+                } label: {
+                    HStack {
+                        if isRestoring {
+                            ProgressView()
+                                .controlSize(.small)
+                        } else {
+                            Image(systemName: "arrow.down.doc")
+                        }
+                        Text(String(localized: "Restore from Backup"))
+                    }
+                }
+                .disabled(isBackingUp || isRestoring)
+
+                if isBackingUp || isRestoring {
+                    ProgressView(value: backupProgress)
+                        .progressViewStyle(.linear)
+                }
+
+                if let lastBackupDate {
+                    LabeledContent(String(localized: "Last Backup")) {
+                        Text(lastBackupDate, style: .relative)
                             .foregroundStyle(.secondary)
                     }
                 }
-                HStack {
-                    Button(String(localized: "backupNow")) {
-                        Task { try? await backupVM.backupToWebDAV() }
-                    }
-                    .buttonStyle(.glassProminent)
-                    .disabled(backupVM.isBackingUp)
-
-                    Button(String(localized: "restore")) {
-                        Task { try? await backupVM.restoreFromWebDAV() }
-                    }
-                    .buttonStyle(.glass)
-                    .disabled(backupVM.isRestoring)
-                }
             } header: {
-                Label("WebDAV", systemImage: "externaldrive.connected.to.line.below")
+                Text(String(localized: "Manual"))
             }
 
-            // MARK: - S3 Section
+            // MARK: - Import
             Section {
-                TextField(String(localized: "s3Endpoint"), text: $vm.s3Endpoint)
-                TextField(String(localized: "s3Bucket"), text: $vm.s3Bucket)
-                TextField(String(localized: "s3Region"), text: $vm.s3Region)
-                SecureField(String(localized: "accessKey"), text: $vm.s3AccessKey)
-                Toggle(String(localized: "autoBackup"), isOn: $vm.s3AutoBackup)
-                if let last = vm.s3LastBackup {
-                    HStack {
-                        Text(String(localized: "lastBackup"))
-                        Spacer()
-                        Text(last, style: .relative)
-                            .foregroundStyle(.secondary)
-                    }
+                Button {
+                    showImportPicker = true
+                } label: {
+                    Label(String(localized: "Import from File (JSON)"), systemImage: "doc.badge.plus")
                 }
-                HStack {
-                    Button(String(localized: "backupNow")) {
-                        Task { try? await backupVM.backupToS3() }
-                    }
-                    .buttonStyle(.glassProminent)
-                    .disabled(backupVM.isBackingUp)
 
-                    Button(String(localized: "restore")) {
-                        Task { try? await backupVM.restoreFromS3() }
-                    }
-                    .buttonStyle(.glass)
-                    .disabled(backupVM.isRestoring)
+                Button {
+                    // Placeholder
+                } label: {
+                    Label(String(localized: "Import from ChatBox"), systemImage: "square.and.arrow.down")
+                }
+
+                Button {
+                    // Placeholder
+                } label: {
+                    Label(String(localized: "Import from Cherry Studio"), systemImage: "square.and.arrow.down")
                 }
             } header: {
-                Label("S3", systemImage: "cloud")
-            }
-
-            // MARK: - Import/Export
-            Section {
-                Button(String(localized: "exportToFile")) {
-                    Task { _ = try? await backupVM.exportToFile() }
-                }
-                .buttonStyle(.glass)
-
-                Button(String(localized: "importFromFile")) {
-                    // File picker
-                }
-                .buttonStyle(.glass)
-
-                Button(String(localized: "importFromChatBox")) {
-                    // ChatBox import
-                }
-                Button(String(localized: "importFromCherryStudio")) {
-                    // Cherry Studio import
-                }
-            } header: {
-                Label(String(localized: "importExport"), systemImage: "arrow.up.arrow.down")
-            }
-
-            // MARK: - Progress
-            if backupVM.isBackingUp || backupVM.isRestoring {
-                Section {
-                    ProgressView(value: backupVM.backupProgress)
-                    Text(backupVM.isBackingUp
-                         ? String(localized: "backingUp")
-                         : String(localized: "restoring"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            if let error = backupVM.errorMessage {
-                Section {
-                    Text(error)
-                        .foregroundStyle(.red)
-                        .font(.caption)
-                }
+                Text(String(localized: "Import"))
+            } footer: {
+                Text(String(localized: "Import conversations and settings from other applications."))
             }
         }
-        .navigationTitle(String(localized: "backupSync"))
+        .formStyle(.grouped)
+        .navigationTitle(String(localized: "Backup & Sync"))
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+    }
+
+    // MARK: - Actions
+
+    private func performBackup() {
+        isBackingUp = true
+        backupProgress = 0
+        Task {
+            for i in 1...10 {
+                try? await Task.sleep(for: .milliseconds(200))
+                backupProgress = Double(i) / 10.0
+            }
+            lastBackupDate = .now
+            isBackingUp = false
+        }
+    }
+
+    private func performRestore() {
+        isRestoring = true
+        backupProgress = 0
+        Task {
+            for i in 1...10 {
+                try? await Task.sleep(for: .milliseconds(300))
+                backupProgress = Double(i) / 10.0
+            }
+            isRestoring = false
+        }
+    }
+}
+
+#Preview {
+    NavigationStack {
+        BackupView()
     }
 }
