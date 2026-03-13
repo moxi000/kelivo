@@ -1,109 +1,194 @@
 import SwiftUI
 
-@available(iOS 26.0, macOS 26.0, *)
 struct TranslateView: View {
-    @Environment(TranslateViewModel.self) private var translateVM
+    @State private var sourceText = ""
+    @State private var targetText = ""
+    @State private var sourceLanguage = "auto"
+    @State private var targetLanguage = "en"
+    @State private var isTranslating = false
 
-    private let languages = [
-        ("auto", "Auto Detect"),
-        ("en", "English"),
-        ("zh-Hans", "简体中文"),
-        ("zh-Hant", "繁體中文"),
-        ("ja", "日本語"),
-        ("ko", "한국어"),
-        ("fr", "Français"),
-        ("de", "Deutsch"),
-        ("es", "Español"),
-        ("pt", "Português"),
-        ("ru", "Русский"),
-        ("ar", "العربية"),
+    private let languages: [(String, String)] = [
+        ("auto", String(localized: "Auto Detect")),
+        ("en", String(localized: "English")),
+        ("zh-Hans", String(localized: "Chinese (Simplified)")),
+        ("zh-Hant", String(localized: "Chinese (Traditional)")),
+        ("ja", String(localized: "Japanese")),
+        ("ko", String(localized: "Korean")),
+        ("fr", String(localized: "French")),
+        ("de", String(localized: "German")),
+        ("es", String(localized: "Spanish")),
+        ("pt", String(localized: "Portuguese")),
+        ("ru", String(localized: "Russian")),
+        ("ar", String(localized: "Arabic")),
+        ("it", String(localized: "Italian")),
     ]
 
     var body: some View {
-        @Bindable var vm = translateVM
-        VStack(spacing: 16) {
-            // Language selectors
+        VStack(spacing: 0) {
+            // MARK: - Language Pickers
             HStack {
-                Picker(String(localized: "sourceLang"), selection: $vm.sourceLang) {
+                Picker(String(localized: "Source"), selection: $sourceLanguage) {
                     ForEach(languages, id: \.0) { code, name in
                         Text(name).tag(code)
                     }
                 }
-                .frame(maxWidth: .infinity)
+                .labelsHidden()
 
                 Button {
-                    translateVM.swapLanguages()
+                    swapLanguages()
                 } label: {
                     Image(systemName: "arrow.left.arrow.right")
+                        .font(.title3)
+                        .padding(8)
                 }
-                .buttonStyle(.glass)
+                .glassCard(cornerRadius: 8)
+                .disabled(sourceLanguage == "auto")
 
-                Picker(String(localized: "targetLang"), selection: $vm.targetLang) {
-                    ForEach(languages.filter { $0.0 != "auto" }, id: \.0) { code, name in
+                Picker(String(localized: "Target"), selection: $targetLanguage) {
+                    ForEach(languages.filter({ $0.0 != "auto" }), id: \.0) { code, name in
                         Text(name).tag(code)
                     }
                 }
-                .frame(maxWidth: .infinity)
+                .labelsHidden()
             }
-            .padding(.horizontal)
+            .padding()
 
-            // Source text
+            Divider()
+
+            // MARK: - Source Text
             VStack(alignment: .leading, spacing: 4) {
-                Text(String(localized: "sourceText"))
+                Text(String(localized: "Source Text"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                TextEditor(text: $vm.sourceText)
-                    .frame(minHeight: 120)
-                    .padding(8)
-                    .glassEffect(.regular, in: .rect(cornerRadius: 12))
-            }
-            .padding(.horizontal)
+                    .padding(.horizontal)
 
-            // Translate button
-            Button {
-                Task { try? await translateVM.translate() }
-            } label: {
-                if translateVM.isTranslating {
-                    ProgressView()
-                        .controlSize(.small)
-                } else {
-                    Label(String(localized: "translate"), systemImage: "translate")
-                }
+                TextEditor(text: $sourceText)
+                    .font(.body)
+                    .scrollContentBackground(.hidden)
+                    .padding(.horizontal)
+                    .frame(maxHeight: .infinity)
             }
-            .buttonStyle(.glassProminent)
-            .disabled(translateVM.sourceText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || translateVM.isTranslating)
+            .padding(.top, 8)
 
-            // Result text
+            Divider()
+
+            // MARK: - Target Text
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text(String(localized: "translatedText"))
+                    Text(String(localized: "Translation"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
+
                     Spacer()
-                    if !translateVM.translatedText.isEmpty {
+
+                    if !targetText.isEmpty {
                         Button {
-                            #if os(macOS)
-                            NSPasteboard.general.clearContents()
-                            NSPasteboard.general.setString(translateVM.translatedText, forType: .string)
-                            #else
-                            UIPasteboard.general.string = translateVM.translatedText
-                            #endif
+                            copyResult()
                         } label: {
                             Image(systemName: "doc.on.doc")
+                                .font(.caption)
                         }
-                        .buttonStyle(.glass)
+                        .buttonStyle(.plain)
                     }
                 }
-                TextEditor(text: .constant(translateVM.translatedText))
-                    .frame(minHeight: 120)
-                    .padding(8)
-                    .glassEffect(.regular, in: .rect(cornerRadius: 12))
-            }
-            .padding(.horizontal)
+                .padding(.horizontal)
 
-            Spacer()
+                if isTranslating {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
+                    }
+                    .frame(maxHeight: .infinity)
+                } else {
+                    ScrollView {
+                        Text(targetText.isEmpty ? String(localized: "Translation will appear here") : targetText)
+                            .font(.body)
+                            .foregroundStyle(targetText.isEmpty ? .secondary : .primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
+                            .textSelection(.enabled)
+                    }
+                    .frame(maxHeight: .infinity)
+                }
+            }
+            .padding(.top, 8)
+
+            Divider()
+
+            // MARK: - Translate Button
+            HStack {
+                Spacer()
+
+                Button {
+                    translate()
+                } label: {
+                    HStack {
+                        Image(systemName: "character.book.closed")
+                        Text(String(localized: "Translate"))
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 10)
+                }
+                .applyGlassProminentButton()
+                .disabled(sourceText.isEmpty || isTranslating)
+
+                Spacer()
+            }
+            .padding()
         }
-        .padding(.top)
-        .navigationTitle(String(localized: "translate"))
+        .navigationTitle(String(localized: "Translate"))
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+    }
+
+    // MARK: - Actions
+
+    private func translate() {
+        isTranslating = true
+        Task {
+            // Placeholder — real implementation would call an LLM with a translation prompt
+            try? await Task.sleep(for: .seconds(1.5))
+            targetText = String(localized: "[Translation result would appear here]")
+            isTranslating = false
+        }
+    }
+
+    private func swapLanguages() {
+        let temp = sourceLanguage
+        sourceLanguage = targetLanguage
+        targetLanguage = temp
+        let tempText = sourceText
+        sourceText = targetText
+        targetText = tempText
+    }
+
+    private func copyResult() {
+        #if os(iOS)
+        UIPasteboard.general.string = targetText
+        #elseif os(macOS)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(targetText, forType: .string)
+        #endif
+    }
+}
+
+// MARK: - Glass Button Style
+
+private extension View {
+    @ViewBuilder
+    func applyGlassProminentButton() -> some View {
+        if #available(iOS 26.0, macOS 26.0, *) {
+            self.buttonStyle(.glassProminent)
+        } else {
+            self.buttonStyle(.borderedProminent)
+        }
+    }
+}
+
+#Preview {
+    NavigationStack {
+        TranslateView()
     }
 }
