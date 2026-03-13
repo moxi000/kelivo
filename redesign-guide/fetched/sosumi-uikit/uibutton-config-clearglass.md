@@ -1,0 +1,11 @@
+---
+url: https://sosumi.ai/documentation/uikit/uibutton/configuration-swift.struct/clearglass%28%29
+slug: uibutton-config-clearglass
+title: uibutton-config-clearglass
+fetched_at: 2026-03-11T11:51:54Z
+source: sosumi.ai
+status: fetched
+format: markdown
+---
+
+--- title: clearGlass() description: Creates a configuration for a button that has a clear Liquid Glass style. source: https://developer.apple.com/documentation/uikit/uibutton/configuration-swift.struct/clearglass() timestamp: 2026-03-11T11:51:54.544Z --- \*\*Navigation:\*\* \[Uikit\](/documentation/uikit) › \[uibutton\](/documentation/uikit/uibutton) › \[configuration-swift.struct\](/documentation/uikit/uibutton/configuration-swift.struct) \*\*Type Method\*\* \# clearGlass() \*\*Available on:\*\* iOS 26.0+, iPadOS 26.0+, Mac Catalyst undefined+, tvOS 26.0+ \> Creates a configuration for a button that has a clear Liquid Glass style. \`\`\`swift static func clearGlass() -\> UIButton.Configuration \`\`\` \## Discussion In tvOS, this button style applies a Liquid Glass effect regardless of whether the button has focus. \## Creating configurations - \[plain()\](/documentation/uikit/uibutton/configuration-swift.struct/plain()) - \[gray()\](/documentation/uikit/uibutton/configuration-swift.struct/gray()) - \[tinted()\](/documentation/uikit/uibutton/configuration-swift.struct/tinted()) - \[filled()\](/documentation/uikit/uibutton/configuration-swift.struct/filled()) - \[borderless()\](/documentation/uikit/uibutton/configuration-swift.struct/borderless()) - \[bordered()\](/documentation/uikit/uibutton/configuration-swift.struct/bordered()) - \[borderedTinted()\](/documentation/uikit/uibutton/configuration-swift.struct/borderedtinted()) - \[borderedProminent()\](/documentation/uikit/uibutton/configuration-swift.struct/borderedprominent()) - \[glass()\](/documentation/uikit/uibutton/configuration-swift.struct/glass()) - \[prominentGlass()\](/documentation/uikit/uibutton/configuration-swift.struct/prominentglass()) - \[prominentClearGlass()\](/documentation/uikit/uibutton/configuration-swift.struct/prominentclearglass()) - \[updated(for:)\](/documentation/uikit/uibutton/configuration-swift.struct/updated(for:)) --- \*Extracted by \[sosumi.ai\](https://sosumi.ai) - Making Apple docs AI-readable.\* \*This is unofficial content. All documentation belongs to Apple Inc.\*

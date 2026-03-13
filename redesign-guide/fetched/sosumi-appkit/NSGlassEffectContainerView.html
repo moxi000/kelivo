@@ -1,0 +1,65 @@
+---
+title: NSGlassEffectContainerView
+description: A view that efficiently merges descendant glass effect views together when they are within a specified proximity to each other.
+source: https://developer.apple.com/documentation/AppKit/NSGlassEffectContainerView
+timestamp: 2026-03-11T11:52:15.892Z
+---
+
+**Navigation:** [AppKit](/documentation/AppKit)
+
+**Class**
+
+# NSGlassEffectContainerView
+
+**Available on:** macOS 26.0+
+
+> A view that efficiently merges descendant glass effect views together when they are within a specified proximity to each other.
+
+```swift
+class NSGlassEffectContainerView
+```
+
+## Overview
+
+> [!TIP]
+> Using a glass effect container view can improve performance by reducing the number of passes required to render similar glass effect views.
+
+## Inherits From
+
+- [NSView](/documentation/appkit/nsview)
+
+## Conforms To
+
+- [CVarArg](/documentation/Swift/CVarArg)
+- [CustomDebugStringConvertible](/documentation/Swift/CustomDebugStringConvertible)
+- [CustomStringConvertible](/documentation/Swift/CustomStringConvertible)
+- [Equatable](/documentation/Swift/Equatable)
+- [Hashable](/documentation/Swift/Hashable)
+- [NSAccessibilityElementProtocol](/documentation/appkit/nsaccessibilityelementprotocol)
+- [NSAccessibilityProtocol](/documentation/appkit/nsaccessibilityprotocol)
+- [NSAnimatablePropertyContainer](/documentation/appkit/nsanimatablepropertycontainer)
+- [NSAppearanceCustomization](/documentation/appkit/nsappearancecustomization)
+- [NSCoding](/documentation/Foundation/NSCoding)
+- [NSDraggingDestination](/documentation/appkit/nsdraggingdestination)
+- [NSObjectProtocol](/documentation/ObjectiveC/NSObjectProtocol)
+- [NSStandardKeyBindingResponding](/documentation/appkit/nsstandardkeybindingresponding)
+- [NSTouchBarProvider](/documentation/appkit/nstouchbarprovider)
+- [NSUserActivityRestoring](/documentation/appkit/nsuseractivityrestoring)
+- [NSUserInterfaceItemIdentification](/documentation/appkit/nsuserinterfaceitemidentification)
+- [Sendable](/documentation/Swift/Sendable)
+- [SendableMetatype](/documentation/Swift/SendableMetatype)
+
+## Instance Properties
+
+- [contentView](/documentation/appkit/nsglasseffectcontainerview/contentview) The view that contains descendant views to merge together when in proximity to each other.
+- [spacing](/documentation/appkit/nsglasseffectcontainerview/spacing) The proximity at which the glass effect container view begins merging eligible descendent glass effect views.
+
+## Liquid Glass effects
+
+- [NSGlassEffectView](/documentation/appkit/nsglasseffectview)
+- [NSGlassEffectView.Style](/documentation/appkit/nsglasseffectview/style-swift.enum)
+
+---
+
+*Extracted by [sosumi.ai](https://sosumi.ai) - Making Apple docs AI-readable.*
+*This is unofficial content. All documentation belongs to Apple Inc.*
