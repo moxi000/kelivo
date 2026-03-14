@@ -100,7 +100,8 @@ struct MessageMoreView: View {
     MessageMoreView(
         message: ChatMessage(
             role: "assistant",
-            content: "Hello, this is a test message."
+            content: "Hello, this is a test message.",
+            conversationId: "preview-conv-id"
         ),
         onAction: { action in
             print("Selected: \(action)")
