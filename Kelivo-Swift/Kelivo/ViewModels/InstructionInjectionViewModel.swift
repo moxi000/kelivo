@@ -67,6 +67,7 @@ final class InstructionInjectionViewModel {
 
         loadGroups()
         loadCollapsedGroups()
+        loadActiveIdsByAssistant()
     }
 
     // MARK: - Injection CRUD
@@ -131,6 +132,65 @@ final class InstructionInjectionViewModel {
         persistGroups()
     }
 
+    // MARK: - Batch Operations
+
+    func addMany(_ newInjections: [InstructionInjection]) {
+        guard let context = modelContext else { return }
+        let startOrder = injections.count
+        for (offset, injection) in newInjections.enumerated() {
+            injection.sortOrder = startOrder + offset
+            context.insert(injection)
+            injections.append(injection)
+        }
+        saveContext()
+    }
+
+    func clearAll() {
+        guard let context = modelContext else { return }
+        for injection in injections {
+            context.delete(injection)
+        }
+        injections.removeAll()
+        saveContext()
+    }
+
+    // MARK: - Reorder
+
+    func reorder(from source: IndexSet, to destination: Int) {
+        injections.move(fromOffsets: source, toOffset: destination)
+        for (index, injection) in injections.enumerated() {
+            injection.sortOrder = index
+        }
+        saveContext()
+    }
+
+    // MARK: - Per-Assistant Active IDs
+
+    func getActiveIds(for assistantId: String?) -> [String] {
+        let key = assistantId ?? Self.globalKey
+        if let ids = activeIdsByAssistant[key] {
+            return ids
+        }
+        // Fall back to global list when no per-assistant override exists
+        return activeIdsByAssistant[Self.globalKey] ?? []
+    }
+
+    func setActiveIds(_ ids: [String], for assistantId: String?) {
+        let key = assistantId ?? Self.globalKey
+        activeIdsByAssistant[key] = ids
+        persistActiveIdsByAssistant()
+    }
+
+    func toggleActiveId(_ id: String, for assistantId: String?) {
+        var ids = Set(getActiveIds(for: assistantId))
+        if ids.contains(id) {
+            ids.remove(id)
+        } else {
+            ids.insert(id)
+        }
+        setActiveIds(Array(ids), for: assistantId)
+    }
+
     // MARK: - Group Collapse State
 
     func toggleGroupCollapsed(_ groupId: String) {
@@ -159,6 +219,19 @@ final class InstructionInjectionViewModel {
     private func persistCollapsedGroups() {
         guard let data = try? JSONEncoder().encode(collapsedGroups) else { return }
         UserDefaults.standard.set(data, forKey: Self.collapsedGroupsStorageKey)
+    }
+
+    private func loadActiveIdsByAssistant() {
+        guard let data = UserDefaults.standard.data(forKey: Self.activeIdsByAssistantKey),
+              let decoded = try? JSONDecoder().decode([String: [String]].self, from: data)
+        else { return }
+
+        activeIdsByAssistant = decoded
+    }
+
+    private func persistActiveIdsByAssistant() {
+        guard let data = try? JSONEncoder().encode(activeIdsByAssistant) else { return }
+        UserDefaults.standard.set(data, forKey: Self.activeIdsByAssistantKey)
     }
 
     private func loadGroups() {

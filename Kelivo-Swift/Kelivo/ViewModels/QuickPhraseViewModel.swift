@@ -59,6 +59,15 @@ final class QuickPhraseViewModel {
         saveContext()
     }
 
+    func clearAll() {
+        guard let context = modelContext else { return }
+        for phrase in phrases {
+            context.delete(phrase)
+        }
+        phrases.removeAll()
+        saveContext()
+    }
+
     func reorder(from source: IndexSet, to destination: Int) {
         phrases.move(fromOffsets: source, toOffset: destination)
 

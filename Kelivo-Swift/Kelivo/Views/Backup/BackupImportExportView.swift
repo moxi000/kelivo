@@ -107,7 +107,7 @@ struct BackupImportExportView: View {
             // MARK: - Third-Party Import
             Section {
                 Button {
-                    showCherryImportPicker = true
+                    showCherryWarning = true
                 } label: {
                     Label(String(localized: "Import from Cherry Studio"), systemImage: "square.and.arrow.down")
                 }
@@ -165,6 +165,17 @@ struct BackupImportExportView: View {
         } message: {
             Text(String(localized: "Choose how to handle the imported data."))
         }
+        .alert(
+            String(localized: "Import from Cherry Studio"),
+            isPresented: $showCherryWarning
+        ) {
+            Button(String(localized: "Cancel"), role: .cancel) {}
+            Button(String(localized: "Continue")) {
+                showCherryImportPicker = true
+            }
+        } message: {
+            Text(String(localized: "This feature is experimental.\nTo keep your data safe, it is recommended to back up before importing.\nProceed to choose a file?"))
+        }
     }
 
     // MARK: - Export
@@ -191,6 +202,7 @@ struct BackupImportExportView: View {
         switch result {
         case .success(let url):
             selectedImportURL = url
+            selectedFileSize = fileSize(at: url)
             showImportConfirmation = true
         case .failure(let error):
             alertTitle = String(localized: "Import Failed")
@@ -252,6 +264,25 @@ struct BackupImportExportView: View {
             alertMessage = String(localized: "Data from \(source) has been imported successfully.")
             showAlert = true
         }
+    }
+
+    // MARK: - File Helpers
+
+    private func fileSize(at url: URL) -> Int64? {
+        guard url.startAccessingSecurityScopedResource() else { return nil }
+        defer { url.stopAccessingSecurityScopedResource() }
+        let values = try? url.resourceValues(forKeys: [.fileSizeKey])
+        return values?.fileSize.map { Int64($0) }
+    }
+
+    private func formatFileSize(_ bytes: Int64) -> String {
+        let kb: Int64 = 1024
+        let mb = kb * 1024
+        let gb = mb * 1024
+        if bytes >= gb { return String(format: "%.2f GB", Double(bytes) / Double(gb)) }
+        if bytes >= mb { return String(format: "%.2f MB", Double(bytes) / Double(mb)) }
+        if bytes >= kb { return String(format: "%.2f KB", Double(bytes) / Double(kb)) }
+        return "\(bytes) B"
     }
 }
 
