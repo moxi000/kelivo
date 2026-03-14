@@ -22,10 +22,12 @@ struct BackupImportExportView: View {
     @State private var importProgress: Double = 0
     @State private var showImportConfirmation = false
     @State private var selectedImportURL: URL?
+    @State private var selectedFileSize: Int64?
 
     // MARK: - Import Source
     @State private var showCherryImportPicker = false
     @State private var showChatBoxImportPicker = false
+    @State private var showCherryWarning = false
 
     // MARK: - Alerts
     @State private var alertTitle = ""
@@ -76,6 +78,21 @@ struct BackupImportExportView: View {
                     Label(String(localized: "Import from File (JSON)"), systemImage: "doc.badge.plus")
                 }
                 .disabled(isImporting || isExporting)
+
+                if let url = selectedImportURL {
+                    LabeledContent(String(localized: "Selected File")) {
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(url.lastPathComponent)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                            if let size = selectedFileSize {
+                                Text(formatFileSize(size))
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
+                        }
+                    }
+                }
 
                 if isImporting {
                     ProgressView(value: importProgress)

@@ -170,6 +170,79 @@ struct CrossPlatformImporter {
         return models
     }
 
+    // MARK: - AssistantTag
+
+    /// Import AssistantTag items from Flutter JSON format.
+    ///
+    /// Flutter JSON fields: `id`, `name`
+    /// Swift model fields: `id`, `name`, `color`, `sortOrder`
+    ///
+    /// - Parameters:
+    ///   - jsonData: JSON data as an array of AssistantTag objects.
+    ///   - context: The SwiftData model context to insert into.
+    /// - Returns: The imported AssistantTag models.
+    /// - Throws: `CrossPlatformImportError` if the JSON is malformed.
+    static func importAssistantTags(
+        from jsonData: Data,
+        context: ModelContext
+    ) throws -> [AssistantTag] {
+        let dtos: [AssistantTagDTO] = try decodeArray(from: jsonData, modelName: "AssistantTag")
+        let models = dtos.map { $0.toModel() }
+        for model in models {
+            context.insert(model)
+        }
+        return models
+    }
+
+    // MARK: - PresetMessage
+
+    /// Import PresetMessage items from Flutter JSON format.
+    ///
+    /// Flutter JSON fields: `id`, `role`, `content`
+    /// Swift model fields: `id`, `role`, `content`, `sortOrder`
+    ///
+    /// - Parameters:
+    ///   - jsonData: JSON data as an array of PresetMessage objects.
+    ///   - context: The SwiftData model context to insert into.
+    /// - Returns: The imported PresetMessage models.
+    /// - Throws: `CrossPlatformImportError` if the JSON is malformed.
+    static func importPresetMessages(
+        from jsonData: Data,
+        context: ModelContext
+    ) throws -> [PresetMessage] {
+        let dtos: [PresetMessageDTO] = try decodeArray(from: jsonData, modelName: "PresetMessage")
+        let models = dtos.map { $0.toModel() }
+        for model in models {
+            context.insert(model)
+        }
+        return models
+    }
+
+    // MARK: - TokenUsage
+
+    /// Import TokenUsage items from Flutter JSON format.
+    ///
+    /// Flutter JSON fields: `promptTokens`, `completionTokens`, `cachedTokens`, `totalTokens`
+    /// Swift model fields: `id`, `messageId`, `promptTokens`, `completionTokens`, `cachedTokens`,
+    ///                      `totalTokens`, `estimatedCost`
+    ///
+    /// - Parameters:
+    ///   - jsonData: JSON data as an array of TokenUsage objects.
+    ///   - context: The SwiftData model context to insert into.
+    /// - Returns: The imported TokenUsage models.
+    /// - Throws: `CrossPlatformImportError` if the JSON is malformed.
+    static func importTokenUsages(
+        from jsonData: Data,
+        context: ModelContext
+    ) throws -> [TokenUsage] {
+        let dtos: [TokenUsageDTO] = try decodeArray(from: jsonData, modelName: "TokenUsage")
+        let models = dtos.map { $0.toModel() }
+        for model in models {
+            context.insert(model)
+        }
+        return models
+    }
+
     // MARK: - Assistant
 
     /// Import Assistant items from Flutter JSON format.

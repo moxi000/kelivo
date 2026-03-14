@@ -38,6 +38,11 @@ final class InstructionInjectionViewModel {
 
     private static let groupsStorageKey = "instructionInjection.groups"
     private static let collapsedGroupsStorageKey = "instructionInjection.collapsedGroups"
+    private static let activeIdsByAssistantKey = "instructionInjection.activeIdsByAssistant"
+    private static let globalKey = "__global__"
+
+    /// Per-assistant active injection IDs. Key is assistant ID or `globalKey` for the default.
+    var activeIdsByAssistant: [String: [String]] = [:]
 
     // MARK: Configuration
 

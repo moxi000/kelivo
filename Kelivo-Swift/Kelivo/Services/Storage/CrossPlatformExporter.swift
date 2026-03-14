@@ -183,6 +183,76 @@ struct CrossPlatformExporter {
         return try serializeSingle(dict, modelName: "BackupConfig")
     }
 
+    // MARK: - AssistantTag
+
+    /// Export AssistantTag items to Flutter JSON format.
+    ///
+    /// Output fields: `id`, `name`, `color`, `sortOrder`
+    /// Flutter only uses `id` and `name`, but extra fields are included
+    /// for lossless round-trip.
+    ///
+    /// - Parameter items: The AssistantTag models to export.
+    /// - Returns: JSON data as an array of objects.
+    /// - Throws: `CrossPlatformExportError` if serialization fails.
+    static func exportAssistantTags(_ items: [AssistantTag]) throws -> Data {
+        let dicts: [[String: Any]] = items.map { item in
+            [
+                "id": item.id,
+                "name": item.name,
+                "color": item.color,
+                "sortOrder": item.sortOrder,
+            ]
+        }
+        return try serializeArray(dicts, modelName: "AssistantTag")
+    }
+
+    // MARK: - PresetMessage
+
+    /// Export PresetMessage items to Flutter JSON format.
+    ///
+    /// Output fields: `id`, `role`, `content`
+    /// Swift-only field `sortOrder` is included for lossless round-trip.
+    ///
+    /// - Parameter items: The PresetMessage models to export.
+    /// - Returns: JSON data as an array of objects.
+    /// - Throws: `CrossPlatformExportError` if serialization fails.
+    static func exportPresetMessages(_ items: [PresetMessage]) throws -> Data {
+        let dicts: [[String: Any]] = items.map { item in
+            [
+                "id": item.id,
+                "role": item.role,
+                "content": item.content,
+                "sortOrder": item.sortOrder,
+            ]
+        }
+        return try serializeArray(dicts, modelName: "PresetMessage")
+    }
+
+    // MARK: - TokenUsage
+
+    /// Export TokenUsage items to Flutter JSON format.
+    ///
+    /// Output fields: `id`, `messageId`, `promptTokens`, `completionTokens`,
+    /// `cachedTokens`, `totalTokens`, `estimatedCost`
+    ///
+    /// - Parameter items: The TokenUsage models to export.
+    /// - Returns: JSON data as an array of objects.
+    /// - Throws: `CrossPlatformExportError` if serialization fails.
+    static func exportTokenUsages(_ items: [TokenUsage]) throws -> Data {
+        let dicts: [[String: Any?]] = items.map { item in
+            [
+                "id": item.id,
+                "messageId": item.messageId,
+                "promptTokens": item.promptTokens,
+                "completionTokens": item.completionTokens,
+                "cachedTokens": item.cachedTokens,
+                "totalTokens": item.totalTokens,
+                "estimatedCost": item.estimatedCost,
+            ]
+        }
+        return try serializeArray(dicts, modelName: "TokenUsage")
+    }
+
     // MARK: - Assistant
 
     /// Export Assistant items to Flutter JSON format.
