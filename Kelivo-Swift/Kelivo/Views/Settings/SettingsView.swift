@@ -23,6 +23,10 @@ private let settingsSections: [SettingsSection] = [
     SettingsSection(id: "tts", title: String(localized: "Text to Speech"), icon: "speaker.wave.3", iconColor: .pink),
     SettingsSection(id: "proxy", title: String(localized: "Network Proxy"), icon: "network", iconColor: .gray),
     SettingsSection(id: "storage", title: String(localized: "Storage Space"), icon: "externaldrive", iconColor: .orange),
+    SettingsSection(id: "font", title: String(localized: "Font"), icon: "textformat", iconColor: .purple),
+    SettingsSection(id: "language", title: String(localized: "Language"), icon: "globe", iconColor: .blue),
+    SettingsSection(id: "logs", title: String(localized: "Log Viewer"), icon: "doc.text", iconColor: .gray),
+    SettingsSection(id: "sponsor", title: String(localized: "Sponsor"), icon: "heart", iconColor: .pink),
     SettingsSection(id: "about", title: String(localized: "About"), icon: "info.circle", iconColor: .secondary),
 ]
 
@@ -97,8 +101,18 @@ struct SettingsView: View {
                     settingsRow(settingsSections[12]) // Storage
                 }
 
+                Section(header: Text(String(localized: "Preferences"))) {
+                    settingsRow(settingsSections[13]) // Font
+                    settingsRow(settingsSections[14]) // Language
+                }
+
+                Section(header: Text(String(localized: "Advanced"))) {
+                    settingsRow(settingsSections[15]) // Logs
+                }
+
                 Section {
-                    settingsRow(settingsSections[13]) // About
+                    settingsRow(settingsSections[16]) // Sponsor
+                    settingsRow(settingsSections[17]) // About
                 }
             }
             .navigationTitle(String(localized: "Settings"))
@@ -146,12 +160,19 @@ struct SettingsView: View {
         case "backup":
             BackupView()
         case "tts":
-            Text(String(localized: "Text to Speech"))
-                .foregroundStyle(.secondary)
+            TTSSettingsView()
         case "proxy":
             NetworkProxyView()
         case "storage":
             StorageSpaceView()
+        case "font":
+            FontPickerView()
+        case "language":
+            LanguageSelectView()
+        case "logs":
+            LogViewerView()
+        case "sponsor":
+            SponsorView()
         case "about":
             AboutView()
         default:

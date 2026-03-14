@@ -69,4 +69,25 @@ actor SearchServiceManager {
         }
         return try await provider.search(query: query, maxResults: maxResults)
     }
+
+    // MARK: - All Providers
+
+    /// All supported search provider factories keyed by ID.
+    /// Each closure takes an API key and returns a configured provider.
+    static let allProviders: [(id: String, name: String, factory: (String) -> any SearchProvider)] = [
+        ("brave", "Brave Search", { BraveSearch(apiKey: $0) }),
+        ("bing", "Bing", { BingSearch(apiKey: $0) }),
+        ("bocha", "Bocha", { BochaSearch(apiKey: $0) }),
+        ("duckduckgo", "DuckDuckGo", { _ in DuckDuckGoSearch() }),
+        ("exa", "EXA", { EXASearch(apiKey: $0) }),
+        ("google", "Google", { GoogleSearch(apiKey: $0, searchEngineId: "") }),
+        ("jina", "Jina", { JinaSearch(apiKey: $0) }),
+        ("linkup", "LinkUp", { LinkUpSearch(apiKey: $0) }),
+        ("metaso", "Metaso", { MetasoSearch(apiKey: $0) }),
+        ("ollama", "Ollama", { OllamaSearch(apiKey: $0) }),
+        ("perplexity", "Perplexity", { PerplexitySearch(apiKey: $0) }),
+        ("searxng", "SearXNG", { SearxngSearch(baseURL: $0) }),
+        ("tavily", "Tavily", { TavilySearch(apiKey: $0) }),
+        ("zhipu", "Zhipu", { ZhipuSearch(apiKey: $0) }),
+    ]
 }
