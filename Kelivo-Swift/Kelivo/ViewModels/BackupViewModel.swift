@@ -26,6 +26,8 @@ final class BackupViewModel {
 
     var isBackingUp: Bool = false
     var isRestoring: Bool = false
+    var isExporting: Bool = false
+    var isImporting: Bool = false
     var backupProgress: Double = 0
     var errorMessage: String?
 
@@ -204,6 +206,55 @@ final class BackupViewModel {
         // 1. Read the Cherry Studio export file
         // 2. Map Cherry Studio conversations/messages to Kelivo data model
         // 3. Insert into SwiftData
+
+        backupProgress = 1.0
+    }
+
+    // MARK: - Local Backup
+
+    func exportLocalBackup() async throws -> URL {
+        isExporting = true
+        backupProgress = 0
+        errorMessage = nil
+        defer {
+            isExporting = false
+            backupProgress = 0
+        }
+
+        // TODO: Implement full local backup export
+        // 1. Collect all SwiftData entities (conversations, messages, assistants,
+        //    settings, instruction injections, world book entries, etc.)
+        // 2. Serialize to a single JSON archive
+        // 3. Write to a timestamped file in the temporary directory
+        // 4. Return the URL for presentation via share sheet or save panel
+
+        let tempDir = FileManager.default.temporaryDirectory
+        let timestamp = ISO8601DateFormatter().string(from: .now)
+        let exportUrl = tempDir.appendingPathComponent("kelivo_local_backup_\(timestamp).json")
+
+        backupProgress = 1.0
+        return exportUrl
+    }
+
+    func importLocalBackup(from url: URL) async throws {
+        isImporting = true
+        backupProgress = 0
+        errorMessage = nil
+        defer {
+            isImporting = false
+            backupProgress = 0
+        }
+
+        guard url.startAccessingSecurityScopedResource() else {
+            throw BackupError.fileAccessDenied
+        }
+        defer { url.stopAccessingSecurityScopedResource() }
+
+        // TODO: Implement full local backup import
+        // 1. Read and validate the backup JSON at url
+        // 2. Deserialize all entity types
+        // 3. Merge or replace existing SwiftData records
+        // 4. Update backupProgress during import
 
         backupProgress = 1.0
     }

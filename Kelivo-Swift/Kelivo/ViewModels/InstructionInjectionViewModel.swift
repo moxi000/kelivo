@@ -30,12 +30,14 @@ final class InstructionInjectionViewModel {
 
     var injections: [InstructionInjection] = []
     var groups: [InstructionInjectionGroup] = []
+    var collapsedGroups: Set<String> = []
 
     // MARK: Private
 
     private var modelContext: ModelContext?
 
     private static let groupsStorageKey = "instructionInjection.groups"
+    private static let collapsedGroupsStorageKey = "instructionInjection.collapsedGroups"
 
     // MARK: Configuration
 
@@ -59,6 +61,7 @@ final class InstructionInjectionViewModel {
         }
 
         loadGroups()
+        loadCollapsedGroups()
     }
 
     // MARK: - Injection CRUD
@@ -123,7 +126,35 @@ final class InstructionInjectionViewModel {
         persistGroups()
     }
 
+    // MARK: - Group Collapse State
+
+    func toggleGroupCollapsed(_ groupId: String) {
+        if collapsedGroups.contains(groupId) {
+            collapsedGroups.remove(groupId)
+        } else {
+            collapsedGroups.insert(groupId)
+        }
+        persistCollapsedGroups()
+    }
+
+    func isGroupCollapsed(_ groupId: String) -> Bool {
+        collapsedGroups.contains(groupId)
+    }
+
     // MARK: - Private
+
+    private func loadCollapsedGroups() {
+        guard let data = UserDefaults.standard.data(forKey: Self.collapsedGroupsStorageKey),
+              let decoded = try? JSONDecoder().decode(Set<String>.self, from: data)
+        else { return }
+
+        collapsedGroups = decoded
+    }
+
+    private func persistCollapsedGroups() {
+        guard let data = try? JSONEncoder().encode(collapsedGroups) else { return }
+        UserDefaults.standard.set(data, forKey: Self.collapsedGroupsStorageKey)
+    }
 
     private func loadGroups() {
         guard let data = UserDefaults.standard.data(forKey: Self.groupsStorageKey),
