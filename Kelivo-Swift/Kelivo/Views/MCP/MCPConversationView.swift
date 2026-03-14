@@ -37,6 +37,16 @@ struct MCPConversationView: View {
                 }
             }
             .navigationTitle(String(localized: "Conversation MCP"))
+            .safeAreaInset(edge: .top, spacing: 0) {
+                if !servers.isEmpty {
+                    Text(String(localized: "Toggle servers to enable or disable their tools for this conversation."))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                        .padding(.bottom, 4)
+                }
+            }
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -148,7 +158,7 @@ struct MCPConversationView: View {
 private struct MCPServerListItem: Identifiable {
     let id: String
     let name: String
-    let transport: String // "stdio", "sse", "http"
+    let transport: String // "stdio", "sse", "http", "inmemory"
     let enabledToolCount: Int
     let totalToolCount: Int
 
@@ -156,6 +166,7 @@ private struct MCPServerListItem: Identifiable {
         switch transport {
         case "inmemory": return String(localized: "In-Memory")
         case "sse": return "SSE"
+        case "stdio": return "Stdio"
         default: return "HTTP"
         }
     }
