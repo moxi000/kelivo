@@ -7,8 +7,11 @@ import SwiftUI
 struct MCPTimeoutView: View {
     @Environment(\.dismiss) private var dismiss
 
-    /// Current timeout value in seconds, passed from the parent.
-    @State private var timeoutSeconds: String = "30"
+    /// Initial timeout value in seconds, passed from the parent to display the current setting.
+    var initialTimeout: Int = 30
+
+    /// Current timeout value in seconds, edited by the user.
+    @State private var timeoutSeconds: String = ""
 
     /// Callback invoked with the validated timeout when the user saves.
     var onSave: ((Int) -> Void)?
@@ -46,6 +49,9 @@ struct MCPTimeoutView: View {
                     Button(String(localized: "Save")) { handleSave() }
                 }
             }
+            .onAppear {
+                timeoutSeconds = "\(initialTimeout)"
+            }
             .alert(
                 String(localized: "Invalid Value"),
                 isPresented: $showInvalidAlert
@@ -71,7 +77,7 @@ struct MCPTimeoutView: View {
 }
 
 #Preview {
-    MCPTimeoutView(onSave: { seconds in
+    MCPTimeoutView(initialTimeout: 60, onSave: { seconds in
         print("Timeout set to \(seconds)s")
     })
 }
